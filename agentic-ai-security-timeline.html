@@ -1,8 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Agentic AI Security Timeline</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap">
@@ -21,7 +16,6 @@
   --track-line: #cbd5e1;
   --grid-line:  #e2e8f0;
 
-  /* milestone colours (validated categorical: slate / blue / orange) */
   --c-gen:      #94a3b8;
   --c-llm:      #3b82f6;
   --c-age:      #f97316;
@@ -127,11 +121,7 @@ h1 {
   color: var(--text-2);
 }
 
-.ldot {
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: block;
-}
+.ldot { border-radius: 50%; flex-shrink: 0; display: block; }
 .ldot.gen  { width:8px;  height:8px;  background:var(--c-gen); }
 .ldot.llm  { width:10px; height:10px; background:var(--c-llm); }
 .ldot.age  { width:13px; height:13px; background:var(--c-age); box-shadow:0 0 0 3px var(--c-age-glow); }
@@ -146,7 +136,7 @@ h1 {
 }
 .chart-inner { min-width: 580px; }
 
-/* ── AXIS ROW (top) ──────────────────────────────────── */
+/* ── AXIS ROW ────────────────────────────────────────── */
 .axis-row {
   display: flex;
   height: 42px;
@@ -219,7 +209,6 @@ h1 {
   flex: 1;
   height: var(--row-h);
   position: relative;
-  /* agentic era shading from Jan 2025 = 71.43% */
   background: linear-gradient(to right,
     transparent 0%,
     transparent 71.43%,
@@ -289,8 +278,8 @@ h1 {
   color: #e2e8f0;
   padding: 13px 16px;
   border-radius: 10px;
-  pointer-events: none;
-  max-width: 290px;
+  pointer-events: auto;   /* must be auto so the source link is clickable */
+  max-width: 300px;
   font-size: .8125rem;
   box-shadow: 0 8px 40px rgba(0,0,0,.45);
   border: 1px solid #2d3f5a;
@@ -332,6 +321,21 @@ h1 {
 .tip-tag.age   { background:rgba(249,115,22,.14); color:#fb923c; border:1px solid rgba(249,115,22,.3); }
 .tip-tag.age-m { background:rgba(249,115,22,.2); color:#fdba74; border:1px solid rgba(249,115,22,.4); }
 
+/* source link inside tooltip */
+.tip-src {
+  display: block;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid #2d3f5a;
+  font-size: .7rem;
+  color: #60a5fa;
+  text-decoration: none;
+  line-height: 1.3;
+  word-break: break-all;
+}
+.tip-src:hover { text-decoration: underline; color: #93c5fd; }
+.tip-src-icon { font-style: normal; margin-right: 3px; }
+
 /* ── FOOTER ──────────────────────────────────────────── */
 .foot {
   color: var(--text-3);
@@ -341,13 +345,12 @@ h1 {
   line-height: 1.7;
 }
 </style>
-</head>
-<body>
+
 <div class="page">
 
   <header>
     <h1>Agentic AI Security — How Recent Is It?</h1>
-    <p class="subtitle">When each major AI security body first added Agentic AI coverage&nbsp;· 2020–2026&nbsp;· Hover dots for details</p>
+    <p class="subtitle">When each major AI security body first added Agentic AI coverage · 2020–2026 · Hover dots for details &amp; source link</p>
   </header>
 
   <div class="legend">
@@ -366,179 +369,309 @@ h1 {
   </p>
 </div>
 
+<!-- tooltip (pointer-events:auto so the source link is clickable) -->
 <div id="tip">
   <div class="tip-date" id="td"></div>
   <div class="tip-title" id="tt"></div>
   <div class="tip-desc"  id="tc"></div>
   <div class="tip-tag"   id="tk"></div>
+  <a  class="tip-src"   id="tl" href="#" target="_blank" rel="noopener noreferrer" hidden>
+    <em class="tip-src-icon">↗</em><span id="tl-txt"></span>
+  </a>
 </div>
 
 <script>
-/* ── DATA ───────────────────────────────────────────── */
-// Timeline: Jan 2020 (month 0) → Dec 2026 (month 83) = 84 months total
 const START = 2020;
-const TOTAL = 84;
+const TOTAL = 84;   // Jan 2020 → Dec 2026
 
-function pct(y, m) {              // m: 1-based
-  return ((y - START) * 12 + (m - 1)) / TOTAL * 100;
-}
+function pct(y, m) { return ((y - START) * 12 + (m - 1)) / TOTAL * 100; }
 
 const YMARKS = [2020,2021,2022,2023,2024,2025,2026];
 const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// type codes: "gen" | "llm" | "age" | "age-m"  (age-m = key agentic milestone)
+// ── MILESTONE DATA ─────────────────────────────────────────────
+// t: 'gen' | 'llm' | 'age' | 'age-m'
+// url: primary public source (opens in new tab from tooltip)
 const ORGS = [
   { name:'OWASP', sub:'Top 10 Series & Agentic ASI', ms:[
-    { y:2021,m:6,  t:'gen',   ti:'ML Security Top 10 v1',
-      d:'OWASP releases its first Machine Learning Security Top 10 — foundational ML attack categories from adversarial examples to model theft.' },
-    { y:2023,m:5,  t:'gen',   ti:'Gen AI Security Project',
-      d:'OWASP launches a dedicated generative AI security initiative, gathering community contributors worldwide.' },
-    { y:2023,m:8,  t:'llm',   ti:'LLM Top 10 v1.0',
-      d:'First LLM-specific risk list: prompt injection, insecure output handling, training data poisoning, model theft, and more.' },
-    { y:2024,m:11, t:'llm',   ti:'LLM Top 10 2025 Edition',
-      d:'"Excessive Agency" risk expanded to cover agentic orchestration patterns — first explicit agentic content in the OWASP Top 10.' },
-    { y:2025,m:2,  t:'age',   ti:'Agentic Security Initiative (ASI)',
-      d:'OWASP launches dedicated Agentic Security Initiative — first comprehensive agentic AI security guide, covering agent trust, tool abuse, and orchestration attacks.' },
-    { y:2025,m:12, t:'age-m', ti:'Top 10 for Agentic Applications',
-      d:'OWASP\'s landmark standalone risk list for agentic applications — the community\'s definitive reference for threats in multi-agent, tool-using AI systems.' },
-    { y:2026,m:6,  t:'age',   ti:'Agentic Top 10 v2.01',
-      d:'Refined agentic taxonomy with updated risk categories and new real-world case studies from the community.' },
-    { y:2026,m:8,  t:'llm',   ti:'LLM Top 10 2026',
-      d:'Annual LLM Top 10 update with deeper agentic context and new GenAI risk categories.' },
+    { y:2021,m:6,  t:'gen',
+      ti:'ML Security Top 10 v1',
+      d:'OWASP releases its first Machine Learning Security Top 10 — foundational ML attack categories from adversarial examples to model theft.',
+      url:'https://owasp.org/www-project-machine-learning-security-top-10/' },
+    { y:2023,m:5,  t:'gen',
+      ti:'Gen AI Security Project',
+      d:'OWASP launches a dedicated generative AI security initiative, gathering community contributors worldwide.',
+      url:'https://genai.owasp.org/' },
+    { y:2023,m:8,  t:'llm',
+      ti:'LLM Top 10 v1.0',
+      d:'First LLM-specific risk list: prompt injection, insecure output handling, training data poisoning, model theft, and more.',
+      url:'https://owasp.org/www-project-top-10-for-large-language-model-applications/' },
+    { y:2024,m:11, t:'llm',
+      ti:'LLM Top 10 2025 Edition',
+      d:'"Excessive Agency" risk expanded to cover agentic orchestration patterns — first explicit agentic content in the OWASP Top 10.',
+      url:'https://genai.owasp.org/llm-top-10/' },
+    { y:2025,m:2,  t:'age',
+      ti:'Agentic Security Initiative (ASI)',
+      d:'OWASP launches dedicated Agentic Security Initiative — first comprehensive agentic AI security guide, covering agent trust, tool abuse, and orchestration attacks.',
+      url:'https://owasp.org/www-project-agentic-ai-security/' },
+    { y:2025,m:12, t:'age-m',
+      ti:'Top 10 for Agentic Applications',
+      d:'OWASP\'s landmark standalone risk list for agentic applications — the community\'s definitive reference for threats in multi-agent, tool-using AI systems.',
+      url:'https://owasp.org/www-project-top-10-for-agentic-ai-applications/' },
+    { y:2026,m:6,  t:'age',
+      ti:'Agentic Top 10 v2.01',
+      d:'Refined agentic taxonomy with updated risk categories and new real-world case studies from the community.',
+      url:'https://owasp.org/www-project-top-10-for-agentic-ai-applications/' },
+    { y:2026,m:8,  t:'llm',
+      ti:'LLM Top 10 2026',
+      d:'Annual LLM Top 10 update with deeper agentic context and new GenAI risk categories.',
+      url:'https://genai.owasp.org/llm-top-10/' },
   ]},
   { name:'MITRE ATLAS', sub:'Adversarial Threat Landscape', ms:[
-    { y:2020,m:10, t:'gen',   ti:'ATLAS v1.0 Launched',
-      d:'MITRE ATLAS debuts as a knowledge base for adversarial ML attacks, modeled on ATT&CK. ML-focused: model extraction, evasion, and data poisoning.' },
-    { y:2022,m:3,  t:'gen',   ti:'ATLAS v2.0 Expansion',
-      d:'Expanded ML techniques added; academic and industry case studies integrated into the knowledge base.' },
-    { y:2023,m:9,  t:'llm',   ti:'GenAI Techniques Added',
-      d:'Adversarial techniques for LLM attacks: prompt injection, model inversion, indirect prompt injection via documents.' },
-    { y:2025,m:3,  t:'llm',   ti:'+19 GenAI Techniques (Spring 2025)',
-      d:'Comprehensive expansion: RAG Poisoning, LLM Prompt Crafting, embedding attacks, output manipulation, and system prompt extraction.' },
-    { y:2025,m:10, t:'age-m', ti:'14 Agentic AI Techniques Added',
-      d:'Collaboration with Zenity Labs adds 14 agentic-specific techniques — agent hijacking, tool misuse, cross-agent injection, and permission escalation in multi-agent systems.' },
-    { y:2025,m:11, t:'age',   ti:'ATLAS v5.1.0',
-      d:'16 tactics, 84 techniques — comprehensive coverage of agentic and multi-agent adversarial patterns alongside classic ML threats.' },
-    { y:2026,m:2,  t:'age',   ti:'ATLAS v5.4.0',
-      d:'Further agent-focused techniques: supply chain risks for agentic systems and sandbox bypass methods for tool-enabled agents.' },
+    { y:2020,m:10, t:'gen',
+      ti:'ATLAS v1.0 Launched',
+      d:'MITRE ATLAS debuts as a knowledge base for adversarial ML attacks, modeled on ATT&CK. ML-focused: model extraction, evasion, and data poisoning.',
+      url:'https://atlas.mitre.org/' },
+    { y:2022,m:3,  t:'gen',
+      ti:'ATLAS v2.0 Expansion',
+      d:'Expanded ML techniques added; academic and industry case studies integrated into the knowledge base.',
+      url:'https://atlas.mitre.org/matrices/ATLAS' },
+    { y:2023,m:9,  t:'llm',
+      ti:'GenAI Techniques Added',
+      d:'Adversarial techniques for LLM attacks: prompt injection, model inversion, indirect prompt injection via documents.',
+      url:'https://atlas.mitre.org/techniques' },
+    { y:2025,m:3,  t:'llm',
+      ti:'+19 GenAI Techniques (Spring 2025)',
+      d:'Comprehensive expansion: RAG Poisoning, LLM Prompt Crafting, embedding attacks, output manipulation, and system prompt extraction.',
+      url:'https://atlas.mitre.org/updates' },
+    { y:2025,m:10, t:'age-m',
+      ti:'14 Agentic AI Techniques Added',
+      d:'Collaboration with Zenity Labs adds 14 agentic-specific techniques — agent hijacking, tool misuse, cross-agent injection, and permission escalation in multi-agent systems.',
+      url:'https://atlas.mitre.org/updates' },
+    { y:2025,m:11, t:'age',
+      ti:'ATLAS v5.1.0',
+      d:'16 tactics, 84 techniques — comprehensive coverage of agentic and multi-agent adversarial patterns alongside classic ML threats.',
+      url:'https://atlas.mitre.org/matrices/ATLAS' },
+    { y:2026,m:2,  t:'age',
+      ti:'ATLAS v5.4.0',
+      d:'Further agent-focused techniques: supply chain risks for agentic systems and sandbox bypass methods for tool-enabled agents.',
+      url:'https://atlas.mitre.org/matrices/ATLAS' },
   ]},
   { name:'NIST', sub:'AI RMF · CAISI', ms:[
-    { y:2023,m:1,  t:'gen',   ti:'AI RMF 1.0 Released',
-      d:'NIST AI Risk Management Framework 1.0 — the foundational US governance document covering accountability, transparency, and explainability for AI systems.' },
-    { y:2024,m:3,  t:'llm',   ti:'AI 600-1 GenAI Profile (Draft)',
-      d:'Companion document to AI RMF covering generative AI-specific risks: CBRN uplift, CSAM, IP violations, and data privacy.' },
-    { y:2024,m:7,  t:'gen',   ti:'NIST CSF 2.0',
-      d:'Cybersecurity Framework 2.0 updated with AI supply chain governance and organizational AI risk management guidance.' },
-    { y:2024,m:8,  t:'llm',   ti:'AI 600-1 Final Published',
-      d:'Final generative AI risk profile; referenced by EU AI Act and global AI regulators for conformity assessments.' },
-    { y:2025,m:12, t:'age',   ti:'NIST IR 8596 Draft',
-      d:'Draft profile mapping CSF 2.0 to AI systems — explicitly addresses agentic AI threat patterns and multi-agent orchestration risks.' },
-    { y:2026,m:1,  t:'age',   ti:'CAISI RFI on AI Agents',
-      d:'NIST Center for AI Safety Issues formal request for information identifying standards gaps for AI agent systems, interoperability, and trust.' },
-    { y:2026,m:2,  t:'age-m', ti:'AI Agent Standards Initiative',
-      d:'CAISI formally launches a program to develop interoperability, identity, and safety standards for AI agents — first US government agentic-specific standards work.' },
+    { y:2023,m:1,  t:'gen',
+      ti:'AI RMF 1.0 Released',
+      d:'NIST AI Risk Management Framework 1.0 — the foundational US governance document covering accountability, transparency, and explainability for AI systems.',
+      url:'https://airc.nist.gov/Home' },
+    { y:2024,m:3,  t:'llm',
+      ti:'AI 600-1 GenAI Profile (Draft)',
+      d:'Companion document to AI RMF covering generative AI-specific risks: CBRN uplift, CSAM, IP violations, and data privacy.',
+      url:'https://airc.nist.gov/Publications/1' },
+    { y:2024,m:7,  t:'gen',
+      ti:'NIST CSF 2.0',
+      d:'Cybersecurity Framework 2.0 updated with AI supply chain governance and organizational AI risk management guidance.',
+      url:'https://www.nist.gov/cyberframework' },
+    { y:2024,m:8,  t:'llm',
+      ti:'AI 600-1 Final Published',
+      d:'Final generative AI risk profile; referenced by EU AI Act and global AI regulators for conformity assessments.',
+      url:'https://doi.org/10.6028/NIST.AI.600-1' },
+    { y:2025,m:12, t:'age',
+      ti:'NIST IR 8596 Draft',
+      d:'Draft profile mapping CSF 2.0 to AI systems — explicitly addresses agentic AI threat patterns and multi-agent orchestration risks.',
+      url:'https://csrc.nist.gov/pubs/ir/8596/ipd' },
+    { y:2026,m:1,  t:'age',
+      ti:'CAISI RFI on AI Agents',
+      d:'NIST Center for AI Safety Issues formal request for information identifying standards gaps for AI agent systems, interoperability, and trust.',
+      url:'https://www.nist.gov/caisi' },
+    { y:2026,m:2,  t:'age-m',
+      ti:'AI Agent Standards Initiative',
+      d:'CAISI formally launches a program to develop interoperability, identity, and safety standards for AI agents — first US government agentic-specific standards work.',
+      url:'https://www.nist.gov/caisi' },
   ]},
   { name:'ETSI', sub:'European Telecom Standards Institute', ms:[
-    { y:2022,m:6,  t:'gen',   ti:'ISG SAI Work Programme',
-      d:'ETSI Securing AI Industry Specification Group active on AI security technical reports — supply chain, data quality, and model lifecycle security.' },
-    { y:2023,m:9,  t:'llm',   ti:'TS 104 223 Technical Specification',
-      d:'Technical Specification for cybersecurity of AI systems — first formal European AI security standard; used in EU AI Act conformance testing.' },
-    { y:2024,m:6,  t:'gen',   ti:'SAI Security Assessment Methodology',
-      d:'Evaluation methodology for AI systems; underpins EU AI Act notified body assessments for high-risk AI systems.' },
-    { y:2026,m:4,  t:'age-m', ti:'EN 304 223 Published',
-      d:'First globally applicable European Standard (EN) for AI cybersecurity — explicitly covers agentic AI, autonomous systems, and AI supply chain security at scale.' },
+    { y:2022,m:6,  t:'gen',
+      ti:'ISG SAI Work Programme',
+      d:'ETSI Securing AI Industry Specification Group active on AI security technical reports — supply chain, data quality, and model lifecycle security.',
+      url:'https://www.etsi.org/technologies/securing-artificial-intelligence' },
+    { y:2023,m:9,  t:'llm',
+      ti:'TS 104 223 Technical Specification',
+      d:'Technical Specification for cybersecurity of AI systems — first formal European AI security standard; used in EU AI Act conformance testing.',
+      url:'https://www.etsi.org/deliver/etsi_ts/104200_104299/104223/' },
+    { y:2024,m:6,  t:'gen',
+      ti:'SAI Security Assessment Methodology',
+      d:'Evaluation methodology for AI systems; underpins EU AI Act notified body assessments for high-risk AI systems.',
+      url:'https://www.etsi.org/technologies/securing-artificial-intelligence' },
+    { y:2026,m:4,  t:'age-m',
+      ti:'EN 304 223 Published',
+      d:'First globally applicable European Standard (EN) for AI cybersecurity — explicitly covers agentic AI, autonomous systems, and AI supply chain security at scale.',
+      url:'https://www.etsi.org/deliver/etsi_en/304200_304299/304223/' },
   ]},
   { name:'NCSC / Five Eyes', sub:'UK National Cyber Security Centre', ms:[
-    { y:2023,m:4,  t:'gen',   ti:'Secure AI Development Guidelines',
-      d:'NCSC + CISA + 18 nations co-publish landmark guidance for developing and operating AI systems securely — the first major international AI security document.' },
-    { y:2024,m:5,  t:'llm',   ti:'Cybersecurity of AI: Shared Responsibility',
-      d:'Guidelines on AI vendor and operator security responsibilities for cloud-hosted AI systems, focusing on LLM deployment security.' },
-    { y:2024,m:11, t:'llm',   ti:'AI Governance Framework',
-      d:'NCSC framework for organizations adopting AI tools, including LLM-specific risk mitigations and supply chain verification.' },
-    { y:2026,m:5,  t:'age-m', ti:'Five Eyes Agentic AI Advisory',
-      d:'"Careful Adoption of Agentic AI Services" — first Five Eyes joint advisory specifically on agentic AI: trust hierarchies, prompt injection in agents, tool abuse, and human oversight requirements.' },
-    { y:2026,m:8,  t:'age',   ti:'Managing Agentic AI Cyber Risk',
-      d:'Interim NCSC guidance on enterprise cyber risk management for agentic AI deployments, including containment controls and incident response.' },
+    { y:2023,m:4,  t:'gen',
+      ti:'Secure AI Development Guidelines',
+      d:'NCSC + CISA + 18 nations co-publish landmark guidance for developing and operating AI systems securely — the first major international AI security document.',
+      url:'https://www.ncsc.gov.uk/collection/guidelines-secure-ai-system-development' },
+    { y:2024,m:5,  t:'llm',
+      ti:'Cybersecurity of AI: Shared Responsibility',
+      d:'Guidelines on AI vendor and operator security responsibilities for cloud-hosted AI systems, focusing on LLM deployment security.',
+      url:'https://www.ncsc.gov.uk/collection/ai-security' },
+    { y:2024,m:11, t:'llm',
+      ti:'AI Governance Framework',
+      d:'NCSC framework for organizations adopting AI tools, including LLM-specific risk mitigations and supply chain verification.',
+      url:'https://www.ncsc.gov.uk/collection/ai-security' },
+    { y:2026,m:5,  t:'age-m',
+      ti:'Five Eyes Agentic AI Advisory',
+      d:'"Careful Adoption of Agentic AI Services" — first Five Eyes joint advisory specifically on agentic AI: trust hierarchies, prompt injection in agents, tool abuse, and human oversight requirements.',
+      url:'https://www.ncsc.gov.uk/collection/ai-security' },
+    { y:2026,m:8,  t:'age',
+      ti:'Managing Agentic AI Cyber Risk',
+      d:'Interim NCSC guidance on enterprise cyber risk management for agentic AI deployments, including containment controls and incident response.',
+      url:'https://www.ncsc.gov.uk/collection/ai-security' },
   ]},
   { name:'CoSAI', sub:'Coalition for Secure AI', ms:[
-    { y:2024,m:7,  t:'gen',   ti:'CoSAI Founded',
-      d:'Coalition for Secure AI founded at Aspen Security Forum; Google, Microsoft, Amazon, IBM, and others as founding members.' },
-    { y:2025,m:9,  t:'llm',   ti:'ML Artifact Signing Paper',
-      d:'Framework for cryptographic signing of ML model artifacts to prevent supply chain tampering and model substitution attacks.' },
-    { y:2025,m:10, t:'llm',   ti:'AI Incident Response Framework',
-      d:'Structured incident response playbook for AI system security events — detection, containment, and recovery for AI-specific incidents.' },
-    { y:2026,m:1,  t:'llm',   ti:'MCP Security Analysis',
-      d:'Security analysis of Model Context Protocol — tool-calling risks, server trust models, data leakage in tool pipelines.' },
-    { y:2026,m:3,  t:'age-m', ti:'"Future of Agentic Security" Report',
-      d:'Landmark CoSAI report defining the agentic AI threat landscape: orchestration attacks, trust delegation failures, tool poisoning, cross-agent manipulation, and agent impersonation.' },
-    { y:2026,m:4,  t:'age',   ti:'Agentic IAM Paper',
-      d:'Identity and access management framework for AI agent principals — delegated authority, credential scope, over-privilege, and credential revocation for agents.' },
-    { y:2026,m:5,  t:'age',   ti:'AI Shared Responsibility Framework',
-      d:'Defines security responsibilities across the full agentic AI stack — AI provider, platform operator, deployer, and end user layers.' },
+    { y:2024,m:7,  t:'gen',
+      ti:'CoSAI Founded',
+      d:'Coalition for Secure AI founded at Aspen Security Forum; Google, Microsoft, Amazon, IBM, and others as founding members.',
+      url:'https://www.coalitionforsecureai.org/' },
+    { y:2025,m:9,  t:'llm',
+      ti:'ML Artifact Signing Paper',
+      d:'Framework for cryptographic signing of ML model artifacts to prevent supply chain tampering and model substitution attacks.',
+      url:'https://www.coalitionforsecureai.org/publications' },
+    { y:2025,m:10, t:'llm',
+      ti:'AI Incident Response Framework',
+      d:'Structured incident response playbook for AI system security events — detection, containment, and recovery for AI-specific incidents.',
+      url:'https://www.coalitionforsecureai.org/publications' },
+    { y:2026,m:1,  t:'llm',
+      ti:'MCP Security Analysis',
+      d:'Security analysis of Model Context Protocol — tool-calling risks, server trust models, data leakage in tool pipelines.',
+      url:'https://www.coalitionforsecureai.org/publications' },
+    { y:2026,m:3,  t:'age-m',
+      ti:'"Future of Agentic Security" Report',
+      d:'Landmark CoSAI report defining the agentic AI threat landscape: orchestration attacks, trust delegation failures, tool poisoning, cross-agent manipulation, and agent impersonation.',
+      url:'https://www.coalitionforsecureai.org/publications' },
+    { y:2026,m:4,  t:'age',
+      ti:'Agentic IAM Paper',
+      d:'Identity and access management framework for AI agent principals — delegated authority, credential scope, over-privilege, and credential revocation for agents.',
+      url:'https://www.coalitionforsecureai.org/publications' },
+    { y:2026,m:5,  t:'age',
+      ti:'AI Shared Responsibility Framework',
+      d:'Defines security responsibilities across the full agentic AI stack — AI provider, platform operator, deployer, and end user layers.',
+      url:'https://www.coalitionforsecureai.org/publications' },
   ]},
   { name:'AISI / CAISI', sub:'AI Safety Institutes (US & UK)', ms:[
-    { y:2023,m:11, t:'gen',   ti:'US AISI Founded',
-      d:'US AI Safety Institute established at NIST following the Biden AI Executive Order — mandate to evaluate frontier AI models for catastrophic risk.' },
-    { y:2024,m:2,  t:'gen',   ti:'International Network & MOUs',
-      d:'UK & US AISI sign MOUs with Anthropic and OpenAI for frontier model safety testing, evaluation access, and information sharing.' },
-    { y:2024,m:5,  t:'llm',   ti:'Safety Evaluations v1',
-      d:'First published safety evaluation reports for major frontier LLM models — capability thresholds, dangerous capability uplift, and risk disclosure.' },
-    { y:2025,m:6,  t:'gen',   ti:'Restructured to CAISI',
-      d:'US AISI restructured as Center for AI Safety and Interoperability (CAISI) within NIST, with expanded standards development mandate.' },
-    { y:2025,m:12, t:'age-m', ti:'Agentic Behavior Evaluations',
-      d:'CAISI formally evaluates autonomous and agentic behavior in frontier models — identifies risks in long-horizon task execution, self-directed planning, and tool misuse.' },
-    { y:2026,m:2,  t:'age',   ti:'AI Agent Standards Initiative',
-      d:'CAISI launches a standards program for agent interoperability, identity verification, and safety guarantees across agentic AI deployments.' },
+    { y:2023,m:11, t:'gen',
+      ti:'US AISI Founded',
+      d:'US AI Safety Institute established at NIST following the Biden AI Executive Order — mandate to evaluate frontier AI models for catastrophic risk.',
+      url:'https://www.nist.gov/artificial-intelligence/executive-order-safe-secure-and-trustworthy-artificial-intelligence' },
+    { y:2024,m:2,  t:'gen',
+      ti:'International Network & MOUs',
+      d:'UK & US AISI sign MOUs with Anthropic and OpenAI for frontier model safety testing, evaluation access, and information sharing.',
+      url:'https://www.nist.gov/aisi' },
+    { y:2024,m:5,  t:'llm',
+      ti:'Safety Evaluations v1',
+      d:'First published safety evaluation reports for major frontier LLM models — capability thresholds, dangerous capability uplift, and risk disclosure.',
+      url:'https://www.nist.gov/aisi' },
+    { y:2025,m:6,  t:'gen',
+      ti:'Restructured to CAISI',
+      d:'US AISI restructured as Center for AI Safety and Interoperability (CAISI) within NIST, with expanded standards development mandate.',
+      url:'https://www.nist.gov/caisi' },
+    { y:2025,m:12, t:'age-m',
+      ti:'Agentic Behavior Evaluations',
+      d:'CAISI formally evaluates autonomous and agentic behavior in frontier models — identifies risks in long-horizon task execution, self-directed planning, and tool misuse.',
+      url:'https://www.nist.gov/caisi' },
+    { y:2026,m:2,  t:'age',
+      ti:'AI Agent Standards Initiative',
+      d:'CAISI launches a standards program for agent interoperability, identity verification, and safety guarantees across agentic AI deployments.',
+      url:'https://www.nist.gov/caisi' },
   ]},
   { name:'CISA', sub:'US Cybersecurity & Infrastructure Security', ms:[
-    { y:2023,m:4,  t:'gen',   ti:'Secure AI Development (Co-author)',
-      d:'CISA co-authors the landmark 20-nation guidelines for developing AI systems securely — first major international AI security publication.' },
-    { y:2024,m:3,  t:'llm',   ti:'CISA AI Roadmap',
-      d:'CISA AI roadmap updated with GenAI-specific risks for critical infrastructure operators and sector coordinators.' },
-    { y:2024,m:11, t:'llm',   ti:'AI Cybersecurity Collaboration',
-      d:'Joint advisory on AI cybersecurity for critical infrastructure sectors — water, energy, and financial services AI deployments.' },
-    { y:2026,m:5,  t:'age-m', ti:'Five Eyes Agentic AI Advisory',
-      d:'CISA co-publishes "Careful Adoption of Agentic AI Services" with NCSC, ASD, CSE, CCCS — the definitive Five Eyes guidance on agentic AI cyber risk.' },
+    { y:2023,m:4,  t:'gen',
+      ti:'Secure AI Development (Co-author)',
+      d:'CISA co-authors the landmark 20-nation guidelines for developing AI systems securely — first major international AI security publication.',
+      url:'https://www.cisa.gov/sites/default/files/2023-11/guidelines-for-secure-ai-system-development_508c.pdf' },
+    { y:2024,m:3,  t:'llm',
+      ti:'CISA AI Roadmap',
+      d:'CISA AI roadmap updated with GenAI-specific risks for critical infrastructure operators and sector coordinators.',
+      url:'https://www.cisa.gov/ai' },
+    { y:2024,m:11, t:'llm',
+      ti:'AI Cybersecurity Collaboration',
+      d:'Joint advisory on AI cybersecurity for critical infrastructure sectors — water, energy, and financial services AI deployments.',
+      url:'https://www.cisa.gov/ai' },
+    { y:2026,m:5,  t:'age-m',
+      ti:'Five Eyes Agentic AI Advisory',
+      d:'CISA co-publishes "Careful Adoption of Agentic AI Services" with NCSC, ASD, CSE, CCCS — the definitive Five Eyes guidance on agentic AI cyber risk.',
+      url:'https://www.cisa.gov/ai' },
   ]},
   { name:'OpenSSF', sub:'Open Source Security Foundation', ms:[
-    { y:2023,m:6,  t:'gen',   ti:'AI/ML Security Scorecard',
-      d:'OpenSSF scorecard extended with AI/ML model security checks for open-source AI projects on GitHub and HuggingFace.' },
-    { y:2024,m:3,  t:'gen',   ti:'AI Security Principles',
-      d:'Principles for securing AI/ML components in the open-source software supply chain — model provenance, signing, and dependency transparency.' },
-    { y:2025,m:9,  t:'llm',   ti:'AI Package Security Guidelines',
-      d:'Guidelines for verifying AI model packages in registries (PyPI, npm, HuggingFace Hub) — malicious model detection and attestation.' },
-    { y:2026,m:4,  t:'age-m', ti:'Agentic AI Supply Chain Security',
-      d:'Security guidelines for agentic AI tool ecosystems — MCP server signing, agent package verification, tool trust frameworks, and agentic dependency audits.' },
+    { y:2023,m:6,  t:'gen',
+      ti:'AI/ML Security Scorecard',
+      d:'OpenSSF scorecard extended with AI/ML model security checks for open-source AI projects on GitHub and HuggingFace.',
+      url:'https://openssf.org/projects/scorecard/' },
+    { y:2024,m:3,  t:'gen',
+      ti:'AI Security Principles',
+      d:'Principles for securing AI/ML components in the open-source software supply chain — model provenance, signing, and dependency transparency.',
+      url:'https://openssf.org/' },
+    { y:2025,m:9,  t:'llm',
+      ti:'AI Package Security Guidelines',
+      d:'Guidelines for verifying AI model packages in registries (PyPI, npm, HuggingFace Hub) — malicious model detection and attestation.',
+      url:'https://openssf.org/' },
+    { y:2026,m:4,  t:'age-m',
+      ti:'Agentic AI Supply Chain Security',
+      d:'Security guidelines for agentic AI tool ecosystems — MCP server signing, agent package verification, tool trust frameworks, and agentic dependency audits.',
+      url:'https://openssf.org/' },
   ]},
   { name:'BSI', sub:'German Federal Office for IT Security', ms:[
-    { y:2021,m:6,  t:'gen',   ti:'AI Cloud Security Requirements',
-      d:'BSI publishes security requirements for AI-based cloud services under the German C5 certification framework.' },
-    { y:2023,m:11, t:'llm',   ti:'LLM Security Analysis',
-      d:'BSI technical analysis of large language model security risks for German government agencies and enterprise adopters.' },
-    { y:2025,m:4,  t:'llm',   ti:'AI Technical Guideline (EU AI Act)',
-      d:'German technical guideline implementing EU AI Act security requirements — conformance procedures for high-risk AI system operators.' },
-    { y:2026,m:6,  t:'age-m', ti:'Agentic AI Risk Analysis',
-      d:'BSI publishes risk taxonomy for agentic AI systems — autonomous decision-making risks in German critical infrastructure sectors.' },
+    { y:2021,m:6,  t:'gen',
+      ti:'AI Cloud Security Requirements',
+      d:'BSI publishes security requirements for AI-based cloud services under the German C5 certification framework.',
+      url:'https://www.bsi.bund.de/EN/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/Kuenstliche-Intelligenz/kuenstliche-intelligenz_node.html' },
+    { y:2023,m:11, t:'llm',
+      ti:'LLM Security Analysis',
+      d:'BSI technical analysis of large language model security risks for German government agencies and enterprise adopters.',
+      url:'https://www.bsi.bund.de/EN/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/Kuenstliche-Intelligenz/kuenstliche-intelligenz_node.html' },
+    { y:2025,m:4,  t:'llm',
+      ti:'AI Technical Guideline (EU AI Act)',
+      d:'German technical guideline implementing EU AI Act security requirements — conformance procedures for high-risk AI system operators.',
+      url:'https://www.bsi.bund.de/EN/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/Kuenstliche-Intelligenz/kuenstliche-intelligenz_node.html' },
+    { y:2026,m:6,  t:'age-m',
+      ti:'Agentic AI Risk Analysis',
+      d:'BSI publishes risk taxonomy for agentic AI systems — autonomous decision-making risks in German critical infrastructure sectors.',
+      url:'https://www.bsi.bund.de/EN/Themen/Unternehmen-und-Organisationen/Informationen-und-Empfehlungen/Kuenstliche-Intelligenz/kuenstliche-intelligenz_node.html' },
   ]},
   { name:'ANSSI', sub:'French National Cybersecurity Agency', ms:[
-    { y:2022,m:9,  t:'gen',   ti:'AI Security Recommendations',
-      d:'ANSSI publishes first recommendations on securing AI systems for French operators of critical information systems (OIV/OSE).' },
-    { y:2024,m:3,  t:'llm',   ti:'GenAI Security Framework',
-      d:'ANSSI framework for responsible generative AI adoption in sensitive French organizations and government ministries.' },
-    { y:2025,m:6,  t:'llm',   ti:'AI Risk Assessment Guide',
-      d:'Methodology for assessing AI-introduced risks in enterprise information systems — aligned with EU AI Act and NIST AI RMF.' },
-    { y:2026,m:5,  t:'age-m', ti:'Agentic AI Security Guidance',
-      d:'ANSSI guidance on deploying agentic AI systems in critical sectors — threat model, security control framework, and incident response procedures.' },
+    { y:2022,m:9,  t:'gen',
+      ti:'AI Security Recommendations',
+      d:'ANSSI publishes first recommendations on securing AI systems for French operators of critical information systems (OIV/OSE).',
+      url:'https://cyber.gouv.fr/publications' },
+    { y:2024,m:3,  t:'llm',
+      ti:'GenAI Security Framework',
+      d:'ANSSI framework for responsible generative AI adoption in sensitive French organizations and government ministries.',
+      url:'https://cyber.gouv.fr/publications' },
+    { y:2025,m:6,  t:'llm',
+      ti:'AI Risk Assessment Guide',
+      d:'Methodology for assessing AI-introduced risks in enterprise information systems — aligned with EU AI Act and NIST AI RMF.',
+      url:'https://cyber.gouv.fr/publications' },
+    { y:2026,m:5,  t:'age-m',
+      ti:'Agentic AI Security Guidance',
+      d:'ANSSI guidance on deploying agentic AI systems in critical sectors — threat model, security control framework, and incident response procedures.',
+      url:'https://cyber.gouv.fr/publications' },
   ]},
   { name:'LF AI & Data', sub:'Linux Foundation AI', ms:[
-    { y:2022,m:4,  t:'gen',   ti:'Trusted AI Initiative',
-      d:'Linux Foundation launches Trusted AI principles and open-source tooling for model transparency, accountability, and reproducibility.' },
-    { y:2023,m:9,  t:'llm',   ti:'LLM Model Card Standards',
-      d:'Standardized model card format for LLMs — capability disclosures, safety testing results, and intended use documentation.' },
-    { y:2025,m:3,  t:'llm',   ti:'AI Bill of Materials (AI BOM)',
-      d:'Specification for AI-specific software bill of materials — tracking AI model components, datasets, and dependencies in enterprise supply chains.' },
-    { y:2026,m:3,  t:'age-m', ti:'Agentic AI Governance Framework',
-      d:'Open governance model for agentic AI systems — agent registry standards, capability disclosure requirements, and trust attestation frameworks for the open-source community.' },
+    { y:2022,m:4,  t:'gen',
+      ti:'Trusted AI Initiative',
+      d:'Linux Foundation launches Trusted AI principles and open-source tooling for model transparency, accountability, and reproducibility.',
+      url:'https://lfaidata.foundation/projects/' },
+    { y:2023,m:9,  t:'llm',
+      ti:'LLM Model Card Standards',
+      d:'Standardized model card format for LLMs — capability disclosures, safety testing results, and intended use documentation.',
+      url:'https://lfaidata.foundation/' },
+    { y:2025,m:3,  t:'llm',
+      ti:'AI Bill of Materials (AI BOM)',
+      d:'Specification for AI-specific software bill of materials — tracking AI model components, datasets, and dependencies in enterprise supply chains.',
+      url:'https://lfaidata.foundation/' },
+    { y:2026,m:3,  t:'age-m',
+      ti:'Agentic AI Governance Framework',
+      d:'Open governance model for agentic AI systems — agent registry standards, capability disclosure requirements, and trust attestation frameworks.',
+      url:'https://lfaidata.foundation/' },
   ]},
 ];
 
@@ -549,11 +682,12 @@ const td    = document.getElementById('td');
 const tt    = document.getElementById('tt');
 const tc    = document.getElementById('tc');
 const tk    = document.getElementById('tk');
+const tl    = document.getElementById('tl');
+const tlTxt = document.getElementById('tl-txt');
 
 function render() {
-  const agePct = pct(2025, 1).toFixed(4); // 71.4286%
+  const agePct = pct(2025, 1).toFixed(4);
 
-  /* year axis */
   let h = `<div class="axis-row"><div class="axis-spc"></div><div class="axis-track">`;
   for (const yr of YMARKS) {
     h += `<span class="yr-lbl" style="left:${pct(yr,1).toFixed(3)}%">${yr}</span>`;
@@ -561,19 +695,14 @@ function render() {
   h += `<span class="age-era-lbl" style="left:${agePct}%">Agentic AI ▶</span>`;
   h += `</div></div>`;
 
-  /* org rows */
   for (let oi = 0; oi < ORGS.length; oi++) {
     const org = ORGS[oi];
     h += `<div class="row">`;
     h += `<div class="row-lbl"><span class="org-n">${org.name}</span><span class="org-s">${org.sub}</span></div>`;
-    h += `<div class="track">`;
-    h += `<div class="track-line"></div>`;
-    h += `<div class="age-bdr"></div>`;
-    /* year grid lines */
+    h += `<div class="track"><div class="track-line"></div><div class="age-bdr"></div>`;
     for (const yr of YMARKS) {
       if (yr > START) h += `<div class="yr-grid" style="left:${pct(yr,1).toFixed(3)}%"></div>`;
     }
-    /* milestone dots */
     for (let mi = 0; mi < org.ms.length; mi++) {
       const ms = org.ms[mi];
       h += `<div class="dot ${ms.t}" style="left:${pct(ms.y,ms.m).toFixed(3)}%" data-o="${oi}" data-m="${mi}"></div>`;
@@ -583,13 +712,22 @@ function render() {
 
   chart.innerHTML = h;
 
-  /* attach events */
   document.querySelectorAll('.dot').forEach(el => {
     el.addEventListener('mouseenter', e => showTip(e, el));
     el.addEventListener('mousemove',  moveTip);
-    el.addEventListener('mouseleave', hideTip);
+    el.addEventListener('mouseleave', schedulHide);
   });
 }
+
+/* tooltip hover-grace: keeps tooltip visible long enough to click the link */
+let hideTimer = null;
+
+function schedulHide() {
+  hideTimer = setTimeout(() => tip.classList.remove('show'), 250);
+}
+
+tip.addEventListener('mouseenter', () => { clearTimeout(hideTimer); });
+tip.addEventListener('mouseleave', () => { tip.classList.remove('show'); });
 
 const TAG = {
   'gen':   'ML / AI Security',
@@ -605,22 +743,33 @@ const TCOL = {
 };
 
 function showTip(e, el) {
+  clearTimeout(hideTimer);
   const org = ORGS[+el.dataset.o];
   const ms  = org.ms[+el.dataset.m];
   const t   = ms.t;
+
   td.textContent = `${MON[ms.m-1]} ${ms.y}`;
   td.style.color = TCOL[t] || '#94a3b8';
   tt.textContent = ms.ti;
   tc.textContent = ms.d;
   tk.textContent = TAG[t] || t;
   tk.className   = `tip-tag ${t}`;
+
+  if (ms.url) {
+    tl.href       = ms.url;
+    tlTxt.textContent = ms.url.replace(/^https?:\/\//, '');
+    tl.hidden     = false;
+  } else {
+    tl.hidden = true;
+  }
+
   tip.classList.add('show');
   moveTip(e);
 }
 
 function moveTip(e) {
-  const W = tip.offsetWidth  || 290;
-  const H = tip.offsetHeight || 140;
+  const W = tip.offsetWidth  || 300;
+  const H = tip.offsetHeight || 160;
   let x = e.clientX + 18, y = e.clientY - 14;
   if (x + W > window.innerWidth  - 8) x = e.clientX - W - 18;
   if (y + H > window.innerHeight - 8) y = e.clientY - H + 14;
@@ -628,9 +777,5 @@ function moveTip(e) {
   tip.style.top  = y + 'px';
 }
 
-function hideTip() { tip.classList.remove('show'); }
-
 render();
 </script>
-</body>
-</html>
