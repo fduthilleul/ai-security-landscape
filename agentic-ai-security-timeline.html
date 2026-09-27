@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic AI Security Timeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap">
+
+<style>
+/* ── THEME TOKENS ─────────────────────────────────────── */
+:root {
+  --bg:         #f1f5f9;
+  --bg-card:    #ffffff;
+  --bg-inner:   #f8fafc;
+  --border:     #e2e8f0;
+  --border-lt:  #f1f5f9;
+  --text-1:     #0f172a;
+  --text-2:     #475569;
+  --text-3:     #94a3b8;
+  --track-line: #cbd5e1;
+  --grid-line:  #e2e8f0;
+
+  /* milestone colours (validated categorical: slate / blue / orange) */
+  --c-gen:      #94a3b8;
+  --c-llm:      #3b82f6;
+  --c-age:      #f97316;
+  --c-age-glow: rgba(249,115,22,.22);
+  --c-age-bg:   rgba(249,115,22,.045);
+  --c-age-bdr:  rgba(249,115,22,.35);
+
+  --label-w: 172px;
+  --row-h:   58px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:         #080d1a;
+    --bg-card:    #0f172a;
+    --bg-inner:   #111827;
+    --border:     #1e293b;
+    --border-lt:  #1e293b;
+    --text-1:     #f1f5f9;
+    --text-2:     #94a3b8;
+    --text-3:     #475569;
+    --track-line: #1e293b;
+    --grid-line:  #1e293b;
+    --c-gen:      #64748b;
+    --c-llm:      #3b82f6;
+    --c-age-bg:   rgba(249,115,22,.07);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:         #080d1a;
+  --bg-card:    #0f172a;
+  --bg-inner:   #111827;
+  --border:     #1e293b;
+  --border-lt:  #1e293b;
+  --text-1:     #f1f5f9;
+  --text-2:     #94a3b8;
+  --text-3:     #475569;
+  --track-line: #1e293b;
+  --grid-line:  #1e293b;
+  --c-gen:      #64748b;
+  --c-llm:      #3b82f6;
+  --c-age-bg:   rgba(249,115,22,.07);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 28px 20px;
+}
+
+.page { max-width: 1140px; margin: 0 auto; }
+
+/* ── HEADER ─────────────────────────────────────────── */
+header { margin-bottom: 22px; }
+
+h1 {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: clamp(1.35rem, 2.8vw, 1.9rem);
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -.025em;
+  text-wrap: balance;
+  margin-bottom: 5px;
+}
+
+.subtitle { color: var(--text-2); font-size: .9375rem; }
+
+/* ── LEGEND ──────────────────────────────────────────── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 11px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.leg-lbl {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-3);
+  margin-right: 4px;
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .8125rem;
+  color: var(--text-2);
+}
+
+.ldot {
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: block;
+}
+.ldot.gen  { width:8px;  height:8px;  background:var(--c-gen); }
+.ldot.llm  { width:10px; height:10px; background:var(--c-llm); }
+.ldot.age  { width:13px; height:13px; background:var(--c-age); box-shadow:0 0 0 3px var(--c-age-glow); }
+
+/* ── CARD ────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 20px 18px;
+  overflow-x: auto;
+}
+.chart-inner { min-width: 580px; }
+
+/* ── AXIS ROW (top) ──────────────────────────────────── */
+.axis-row {
+  display: flex;
+  height: 42px;
+  align-items: flex-end;
+  margin-bottom: 6px;
+}
+.axis-spc { width: var(--label-w); flex-shrink: 0; }
+
+.axis-track {
+  flex: 1;
+  position: relative;
+  height: 100%;
+}
+
+.yr-lbl {
+  position: absolute;
+  bottom: 0;
+  font-size: .6875rem;
+  font-weight: 500;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.age-era-lbl {
+  position: absolute;
+  bottom: 20px;
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--c-age);
+  white-space: nowrap;
+  transform: translateX(-2px);
+  pointer-events: none;
+}
+
+/* ── ORG ROWS ────────────────────────────────────────── */
+.row {
+  display: flex;
+  align-items: center;
+  height: var(--row-h);
+  border-bottom: 1px solid var(--border-lt);
+}
+.row:last-child { border-bottom: none; }
+
+.row-lbl {
+  width: var(--label-w);
+  flex-shrink: 0;
+  padding-right: 14px;
+}
+.org-n {
+  display: block;
+  font-weight: 600;
+  font-size: .8125rem;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+.org-s {
+  display: block;
+  font-size: .65rem;
+  color: var(--text-3);
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+.track {
+  flex: 1;
+  height: var(--row-h);
+  position: relative;
+  /* agentic era shading from Jan 2025 = 71.43% */
+  background: linear-gradient(to right,
+    transparent 0%,
+    transparent 71.43%,
+    var(--c-age-bg) 71.43%,
+    var(--c-age-bg) 100%
+  );
+}
+
+.track-line {
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 1px;
+  background: var(--track-line);
+  transform: translateY(-50%);
+}
+
+.yr-grid {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: var(--grid-line);
+  pointer-events: none;
+}
+
+.age-bdr {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 71.43%;
+  width: 1px;
+  background: var(--c-age-bdr);
+  pointer-events: none;
+}
+
+/* ── MILESTONE DOTS ──────────────────────────────────── */
+.dot {
+  position: absolute;
+  top: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: transform .12s ease;
+  z-index: 2;
+}
+.dot:hover { transform: translate(-50%,-50%) scale(1.6); z-index: 20; }
+
+.dot.gen  { width:8px;  height:8px;  background:var(--c-gen); }
+.dot.llm  { width:10px; height:10px; background:var(--c-llm); }
+.dot.age  { width:13px; height:13px; background:var(--c-age); box-shadow:0 0 0 3px var(--c-age-glow); }
+.dot.age-m {
+  width:16px; height:16px;
+  background:var(--c-age);
+  box-shadow:0 0 0 4px var(--c-age-glow), 0 0 10px rgba(249,115,22,.5);
+  animation: pulse 2.6s ease-in-out infinite;
+  z-index: 3;
+}
+
+@keyframes pulse {
+  0%,100% { box-shadow:0 0 0 3px rgba(249,115,22,.22); }
+  50%      { box-shadow:0 0 0 8px rgba(249,115,22,.09), 0 0 14px rgba(249,115,22,.45); }
+}
+
+/* ── TOOLTIP ─────────────────────────────────────────── */
+#tip {
+  position: fixed;
+  z-index: 9999;
+  background: #1a2438;
+  color: #e2e8f0;
+  padding: 13px 16px;
+  border-radius: 10px;
+  pointer-events: none;
+  max-width: 290px;
+  font-size: .8125rem;
+  box-shadow: 0 8px 40px rgba(0,0,0,.45);
+  border: 1px solid #2d3f5a;
+  display: none;
+}
+#tip.show { display: block; }
+
+.tip-date {
+  font-size: .625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 5px;
+}
+.tip-title {
+  font-weight: 600;
+  font-size: .875rem;
+  color: #f1f5f9;
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+.tip-desc {
+  font-size: .75rem;
+  color: #8097b5;
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+.tip-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.tip-tag.gen   { background:#1e2d40; color:#64748b; border:1px solid #2d3f5a; }
+.tip-tag.llm   { background:rgba(59,130,246,.14); color:#60a5fa; border:1px solid rgba(59,130,246,.3); }
+.tip-tag.age   { background:rgba(249,115,22,.14); color:#fb923c; border:1px solid rgba(249,115,22,.3); }
+.tip-tag.age-m { background:rgba(249,115,22,.2); color:#fdba74; border:1px solid rgba(249,115,22,.4); }
+
+/* ── FOOTER ──────────────────────────────────────────── */
+.foot {
+  color: var(--text-3);
+  font-size: .7rem;
+  margin-top: 14px;
+  text-align: center;
+  line-height: 1.7;
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Agentic AI Security — How Recent Is It?</h1>
+    <p class="subtitle">When each major AI security body first added Agentic AI coverage&nbsp;· 2020–2026&nbsp;· Hover dots for details</p>
+  </header>
+
+  <div class="legend">
+    <span class="leg-lbl">Milestone:</span>
+    <div class="leg-item"><span class="ldot gen"></span>ML / AI Security (General)</div>
+    <div class="leg-item"><span class="ldot llm"></span>LLM / GenAI Security</div>
+    <div class="leg-item"><span class="ldot age"></span><strong>Agentic AI Security</strong>&nbsp;— pulsing dot = key milestone</div>
+  </div>
+
+  <div class="card">
+    <div class="chart-inner" id="chart"></div>
+  </div>
+
+  <p class="foot">
+    Sources: OWASP · MITRE ATLAS · NIST CAISI · ETSI ISG SAI · NCSC / CISA / Five Eyes · CoSAI · AISI/CAISI · OpenSSF · BSI · ANSSI · LF AI &amp; Data
+  </p>
+</div>
+
+<div id="tip">
+  <div class="tip-date" id="td"></div>
+  <div class="tip-title" id="tt"></div>
+  <div class="tip-desc"  id="tc"></div>
+  <div class="tip-tag"   id="tk"></div>
+</div>
+
+<script>
+/* ── DATA ───────────────────────────────────────────── */
+// Timeline: Jan 2020 (month 0) → Dec 2026 (month 83) = 84 months total
+const START = 2020;
+const TOTAL = 84;
+
+function pct(y, m) {              // m: 1-based
+  return ((y - START) * 12 + (m - 1)) / TOTAL * 100;
+}
+
+const YMARKS = [2020,2021,2022,2023,2024,2025,2026];
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// type codes: "gen" | "llm" | "age" | "age-m"  (age-m = key agentic milestone)
+const ORGS = [
+  { name:'OWASP', sub:'Top 10 Series & Agentic ASI', ms:[
+    { y:2021,m:6,  t:'gen',   ti:'ML Security Top 10 v1',
+      d:'OWASP releases its first Machine Learning Security Top 10 — foundational ML attack categories from adversarial examples to model theft.' },
+    { y:2023,m:5,  t:'gen',   ti:'Gen AI Security Project',
+      d:'OWASP launches a dedicated generative AI security initiative, gathering community contributors worldwide.' },
+    { y:2023,m:8,  t:'llm',   ti:'LLM Top 10 v1.0',
+      d:'First LLM-specific risk list: prompt injection, insecure output handling, training data poisoning, model theft, and more.' },
+    { y:2024,m:11, t:'llm',   ti:'LLM Top 10 2025 Edition',
+      d:'"Excessive Agency" risk expanded to cover agentic orchestration patterns — first explicit agentic content in the OWASP Top 10.' },
+    { y:2025,m:2,  t:'age',   ti:'Agentic Security Initiative (ASI)',
+      d:'OWASP launches dedicated Agentic Security Initiative — first comprehensive agentic AI security guide, covering agent trust, tool abuse, and orchestration attacks.' },
+    { y:2025,m:12, t:'age-m', ti:'Top 10 for Agentic Applications',
+      d:'OWASP\'s landmark standalone risk list for agentic applications — the community\'s definitive reference for threats in multi-agent, tool-using AI systems.' },
+    { y:2026,m:6,  t:'age',   ti:'Agentic Top 10 v2.01',
+      d:'Refined agentic taxonomy with updated risk categories and new real-world case studies from the community.' },
+    { y:2026,m:8,  t:'llm',   ti:'LLM Top 10 2026',
+      d:'Annual LLM Top 10 update with deeper agentic context and new GenAI risk categories.' },
+  ]},
+  { name:'MITRE ATLAS', sub:'Adversarial Threat Landscape', ms:[
+    { y:2020,m:10, t:'gen',   ti:'ATLAS v1.0 Launched',
+      d:'MITRE ATLAS debuts as a knowledge base for adversarial ML attacks, modeled on ATT&CK. ML-focused: model extraction, evasion, and data poisoning.' },
+    { y:2022,m:3,  t:'gen',   ti:'ATLAS v2.0 Expansion',
+      d:'Expanded ML techniques added; academic and industry case studies integrated into the knowledge base.' },
+    { y:2023,m:9,  t:'llm',   ti:'GenAI Techniques Added',
+      d:'Adversarial techniques for LLM attacks: prompt injection, model inversion, indirect prompt injection via documents.' },
+    { y:2025,m:3,  t:'llm',   ti:'+19 GenAI Techniques (Spring 2025)',
+      d:'Comprehensive expansion: RAG Poisoning, LLM Prompt Crafting, embedding attacks, output manipulation, and system prompt extraction.' },
+    { y:2025,m:10, t:'age-m', ti:'14 Agentic AI Techniques Added',
+      d:'Collaboration with Zenity Labs adds 14 agentic-specific techniques — agent hijacking, tool misuse, cross-agent injection, and permission escalation in multi-agent systems.' },
+    { y:2025,m:11, t:'age',   ti:'ATLAS v5.1.0',
+      d:'16 tactics, 84 techniques — comprehensive coverage of agentic and multi-agent adversarial patterns alongside classic ML threats.' },
+    { y:2026,m:2,  t:'age',   ti:'ATLAS v5.4.0',
+      d:'Further agent-focused techniques: supply chain risks for agentic systems and sandbox bypass methods for tool-enabled agents.' },
+  ]},
+  { name:'NIST', sub:'AI RMF · CAISI', ms:[
+    { y:2023,m:1,  t:'gen',   ti:'AI RMF 1.0 Released',
+      d:'NIST AI Risk Management Framework 1.0 — the foundational US governance document covering accountability, transparency, and explainability for AI systems.' },
+    { y:2024,m:3,  t:'llm',   ti:'AI 600-1 GenAI Profile (Draft)',
+      d:'Companion document to AI RMF covering generative AI-specific risks: CBRN uplift, CSAM, IP violations, and data privacy.' },
+    { y:2024,m:7,  t:'gen',   ti:'NIST CSF 2.0',
+      d:'Cybersecurity Framework 2.0 updated with AI supply chain governance and organizational AI risk management guidance.' },
+    { y:2024,m:8,  t:'llm',   ti:'AI 600-1 Final Published',
+      d:'Final generative AI risk profile; referenced by EU AI Act and global AI regulators for conformity assessments.' },
+    { y:2025,m:12, t:'age',   ti:'NIST IR 8596 Draft',
+      d:'Draft profile mapping CSF 2.0 to AI systems — explicitly addresses agentic AI threat patterns and multi-agent orchestration risks.' },
+    { y:2026,m:1,  t:'age',   ti:'CAISI RFI on AI Agents',
+      d:'NIST Center for AI Safety Issues formal request for information identifying standards gaps for AI agent systems, interoperability, and trust.' },
+    { y:2026,m:2,  t:'age-m', ti:'AI Agent Standards Initiative',
+      d:'CAISI formally launches a program to develop interoperability, identity, and safety standards for AI agents — first US government agentic-specific standards work.' },
+  ]},
+  { name:'ETSI', sub:'European Telecom Standards Institute', ms:[
+    { y:2022,m:6,  t:'gen',   ti:'ISG SAI Work Programme',
+      d:'ETSI Securing AI Industry Specification Group active on AI security technical reports — supply chain, data quality, and model lifecycle security.' },
+    { y:2023,m:9,  t:'llm',   ti:'TS 104 223 Technical Specification',
+      d:'Technical Specification for cybersecurity of AI systems — first formal European AI security standard; used in EU AI Act conformance testing.' },
+    { y:2024,m:6,  t:'gen',   ti:'SAI Security Assessment Methodology',
+      d:'Evaluation methodology for AI systems; underpins EU AI Act notified body assessments for high-risk AI systems.' },
+    { y:2026,m:4,  t:'age-m', ti:'EN 304 223 Published',
+      d:'First globally applicable European Standard (EN) for AI cybersecurity — explicitly covers agentic AI, autonomous systems, and AI supply chain security at scale.' },
+  ]},
+  { name:'NCSC / Five Eyes', sub:'UK National Cyber Security Centre', ms:[
+    { y:2023,m:4,  t:'gen',   ti:'Secure AI Development Guidelines',
+      d:'NCSC + CISA + 18 nations co-publish landmark guidance for developing and operating AI systems securely — the first major international AI security document.' },
+    { y:2024,m:5,  t:'llm',   ti:'Cybersecurity of AI: Shared Responsibility',
+      d:'Guidelines on AI vendor and operator security responsibilities for cloud-hosted AI systems, focusing on LLM deployment security.' },
+    { y:2024,m:11, t:'llm',   ti:'AI Governance Framework',
+      d:'NCSC framework for organizations adopting AI tools, including LLM-specific risk mitigations and supply chain verification.' },
+    { y:2026,m:5,  t:'age-m', ti:'Five Eyes Agentic AI Advisory',
+      d:'"Careful Adoption of Agentic AI Services" — first Five Eyes joint advisory specifically on agentic AI: trust hierarchies, prompt injection in agents, tool abuse, and human oversight requirements.' },
+    { y:2026,m:8,  t:'age',   ti:'Managing Agentic AI Cyber Risk',
+      d:'Interim NCSC guidance on enterprise cyber risk management for agentic AI deployments, including containment controls and incident response.' },
+  ]},
+  { name:'CoSAI', sub:'Coalition for Secure AI', ms:[
+    { y:2024,m:7,  t:'gen',   ti:'CoSAI Founded',
+      d:'Coalition for Secure AI founded at Aspen Security Forum; Google, Microsoft, Amazon, IBM, and others as founding members.' },
+    { y:2025,m:9,  t:'llm',   ti:'ML Artifact Signing Paper',
+      d:'Framework for cryptographic signing of ML model artifacts to prevent supply chain tampering and model substitution attacks.' },
+    { y:2025,m:10, t:'llm',   ti:'AI Incident Response Framework',
+      d:'Structured incident response playbook for AI system security events — detection, containment, and recovery for AI-specific incidents.' },
+    { y:2026,m:1,  t:'llm',   ti:'MCP Security Analysis',
+      d:'Security analysis of Model Context Protocol — tool-calling risks, server trust models, data leakage in tool pipelines.' },
+    { y:2026,m:3,  t:'age-m', ti:'"Future of Agentic Security" Report',
+      d:'Landmark CoSAI report defining the agentic AI threat landscape: orchestration attacks, trust delegation failures, tool poisoning, cross-agent manipulation, and agent impersonation.' },
+    { y:2026,m:4,  t:'age',   ti:'Agentic IAM Paper',
+      d:'Identity and access management framework for AI agent principals — delegated authority, credential scope, over-privilege, and credential revocation for agents.' },
+    { y:2026,m:5,  t:'age',   ti:'AI Shared Responsibility Framework',
+      d:'Defines security responsibilities across the full agentic AI stack — AI provider, platform operator, deployer, and end user layers.' },
+  ]},
+  { name:'AISI / CAISI', sub:'AI Safety Institutes (US & UK)', ms:[
+    { y:2023,m:11, t:'gen',   ti:'US AISI Founded',
+      d:'US AI Safety Institute established at NIST following the Biden AI Executive Order — mandate to evaluate frontier AI models for catastrophic risk.' },
+    { y:2024,m:2,  t:'gen',   ti:'International Network & MOUs',
+      d:'UK & US AISI sign MOUs with Anthropic and OpenAI for frontier model safety testing, evaluation access, and information sharing.' },
+    { y:2024,m:5,  t:'llm',   ti:'Safety Evaluations v1',
+      d:'First published safety evaluation reports for major frontier LLM models — capability thresholds, dangerous capability uplift, and risk disclosure.' },
+    { y:2025,m:6,  t:'gen',   ti:'Restructured to CAISI',
+      d:'US AISI restructured as Center for AI Safety and Interoperability (CAISI) within NIST, with expanded standards development mandate.' },
+    { y:2025,m:12, t:'age-m', ti:'Agentic Behavior Evaluations',
+      d:'CAISI formally evaluates autonomous and agentic behavior in frontier models — identifies risks in long-horizon task execution, self-directed planning, and tool misuse.' },
+    { y:2026,m:2,  t:'age',   ti:'AI Agent Standards Initiative',
+      d:'CAISI launches a standards program for agent interoperability, identity verification, and safety guarantees across agentic AI deployments.' },
+  ]},
+  { name:'CISA', sub:'US Cybersecurity & Infrastructure Security', ms:[
+    { y:2023,m:4,  t:'gen',   ti:'Secure AI Development (Co-author)',
+      d:'CISA co-authors the landmark 20-nation guidelines for developing AI systems securely — first major international AI security publication.' },
+    { y:2024,m:3,  t:'llm',   ti:'CISA AI Roadmap',
+      d:'CISA AI roadmap updated with GenAI-specific risks for critical infrastructure operators and sector coordinators.' },
+    { y:2024,m:11, t:'llm',   ti:'AI Cybersecurity Collaboration',
+      d:'Joint advisory on AI cybersecurity for critical infrastructure sectors — water, energy, and financial services AI deployments.' },
+    { y:2026,m:5,  t:'age-m', ti:'Five Eyes Agentic AI Advisory',
+      d:'CISA co-publishes "Careful Adoption of Agentic AI Services" with NCSC, ASD, CSE, CCCS — the definitive Five Eyes guidance on agentic AI cyber risk.' },
+  ]},
+  { name:'OpenSSF', sub:'Open Source Security Foundation', ms:[
+    { y:2023,m:6,  t:'gen',   ti:'AI/ML Security Scorecard',
+      d:'OpenSSF scorecard extended with AI/ML model security checks for open-source AI projects on GitHub and HuggingFace.' },
+    { y:2024,m:3,  t:'gen',   ti:'AI Security Principles',
+      d:'Principles for securing AI/ML components in the open-source software supply chain — model provenance, signing, and dependency transparency.' },
+    { y:2025,m:9,  t:'llm',   ti:'AI Package Security Guidelines',
+      d:'Guidelines for verifying AI model packages in registries (PyPI, npm, HuggingFace Hub) — malicious model detection and attestation.' },
+    { y:2026,m:4,  t:'age-m', ti:'Agentic AI Supply Chain Security',
+      d:'Security guidelines for agentic AI tool ecosystems — MCP server signing, agent package verification, tool trust frameworks, and agentic dependency audits.' },
+  ]},
+  { name:'BSI', sub:'German Federal Office for IT Security', ms:[
+    { y:2021,m:6,  t:'gen',   ti:'AI Cloud Security Requirements',
+      d:'BSI publishes security requirements for AI-based cloud services under the German C5 certification framework.' },
+    { y:2023,m:11, t:'llm',   ti:'LLM Security Analysis',
+      d:'BSI technical analysis of large language model security risks for German government agencies and enterprise adopters.' },
+    { y:2025,m:4,  t:'llm',   ti:'AI Technical Guideline (EU AI Act)',
+      d:'German technical guideline implementing EU AI Act security requirements — conformance procedures for high-risk AI system operators.' },
+    { y:2026,m:6,  t:'age-m', ti:'Agentic AI Risk Analysis',
+      d:'BSI publishes risk taxonomy for agentic AI systems — autonomous decision-making risks in German critical infrastructure sectors.' },
+  ]},
+  { name:'ANSSI', sub:'French National Cybersecurity Agency', ms:[
+    { y:2022,m:9,  t:'gen',   ti:'AI Security Recommendations',
+      d:'ANSSI publishes first recommendations on securing AI systems for French operators of critical information systems (OIV/OSE).' },
+    { y:2024,m:3,  t:'llm',   ti:'GenAI Security Framework',
+      d:'ANSSI framework for responsible generative AI adoption in sensitive French organizations and government ministries.' },
+    { y:2025,m:6,  t:'llm',   ti:'AI Risk Assessment Guide',
+      d:'Methodology for assessing AI-introduced risks in enterprise information systems — aligned with EU AI Act and NIST AI RMF.' },
+    { y:2026,m:5,  t:'age-m', ti:'Agentic AI Security Guidance',
+      d:'ANSSI guidance on deploying agentic AI systems in critical sectors — threat model, security control framework, and incident response procedures.' },
+  ]},
+  { name:'LF AI & Data', sub:'Linux Foundation AI', ms:[
+    { y:2022,m:4,  t:'gen',   ti:'Trusted AI Initiative',
+      d:'Linux Foundation launches Trusted AI principles and open-source tooling for model transparency, accountability, and reproducibility.' },
+    { y:2023,m:9,  t:'llm',   ti:'LLM Model Card Standards',
+      d:'Standardized model card format for LLMs — capability disclosures, safety testing results, and intended use documentation.' },
+    { y:2025,m:3,  t:'llm',   ti:'AI Bill of Materials (AI BOM)',
+      d:'Specification for AI-specific software bill of materials — tracking AI model components, datasets, and dependencies in enterprise supply chains.' },
+    { y:2026,m:3,  t:'age-m', ti:'Agentic AI Governance Framework',
+      d:'Open governance model for agentic AI systems — agent registry standards, capability disclosure requirements, and trust attestation frameworks for the open-source community.' },
+  ]},
+];
+
+/* ── RENDER ──────────────────────────────────────────── */
+const chart = document.getElementById('chart');
+const tip   = document.getElementById('tip');
+const td    = document.getElementById('td');
+const tt    = document.getElementById('tt');
+const tc    = document.getElementById('tc');
+const tk    = document.getElementById('tk');
+
+function render() {
+  const agePct = pct(2025, 1).toFixed(4); // 71.4286%
+
+  /* year axis */
+  let h = `<div class="axis-row"><div class="axis-spc"></div><div class="axis-track">`;
+  for (const yr of YMARKS) {
+    h += `<span class="yr-lbl" style="left:${pct(yr,1).toFixed(3)}%">${yr}</span>`;
+  }
+  h += `<span class="age-era-lbl" style="left:${agePct}%">Agentic AI ▶</span>`;
+  h += `</div></div>`;
+
+  /* org rows */
+  for (let oi = 0; oi < ORGS.length; oi++) {
+    const org = ORGS[oi];
+    h += `<div class="row">`;
+    h += `<div class="row-lbl"><span class="org-n">${org.name}</span><span class="org-s">${org.sub}</span></div>`;
+    h += `<div class="track">`;
+    h += `<div class="track-line"></div>`;
+    h += `<div class="age-bdr"></div>`;
+    /* year grid lines */
+    for (const yr of YMARKS) {
+      if (yr > START) h += `<div class="yr-grid" style="left:${pct(yr,1).toFixed(3)}%"></div>`;
+    }
+    /* milestone dots */
+    for (let mi = 0; mi < org.ms.length; mi++) {
+      const ms = org.ms[mi];
+      h += `<div class="dot ${ms.t}" style="left:${pct(ms.y,ms.m).toFixed(3)}%" data-o="${oi}" data-m="${mi}"></div>`;
+    }
+    h += `</div></div>`;
+  }
+
+  chart.innerHTML = h;
+
+  /* attach events */
+  document.querySelectorAll('.dot').forEach(el => {
+    el.addEventListener('mouseenter', e => showTip(e, el));
+    el.addEventListener('mousemove',  moveTip);
+    el.addEventListener('mouseleave', hideTip);
+  });
+}
+
+const TAG = {
+  'gen':   'ML / AI Security',
+  'llm':   'LLM / GenAI Security',
+  'age':   '⚡ Agentic AI Security',
+  'age-m': '🔑 Key Agentic Milestone',
+};
+const TCOL = {
+  'gen':   '#64748b',
+  'llm':   '#60a5fa',
+  'age':   '#fb923c',
+  'age-m': '#fdba74',
+};
+
+function showTip(e, el) {
+  const org = ORGS[+el.dataset.o];
+  const ms  = org.ms[+el.dataset.m];
+  const t   = ms.t;
+  td.textContent = `${MON[ms.m-1]} ${ms.y}`;
+  td.style.color = TCOL[t] || '#94a3b8';
+  tt.textContent = ms.ti;
+  tc.textContent = ms.d;
+  tk.textContent = TAG[t] || t;
+  tk.className   = `tip-tag ${t}`;
+  tip.classList.add('show');
+  moveTip(e);
+}
+
+function moveTip(e) {
+  const W = tip.offsetWidth  || 290;
+  const H = tip.offsetHeight || 140;
+  let x = e.clientX + 18, y = e.clientY - 14;
+  if (x + W > window.innerWidth  - 8) x = e.clientX - W - 18;
+  if (y + H > window.innerHeight - 8) y = e.clientY - H + 14;
+  tip.style.left = x + 'px';
+  tip.style.top  = y + 'px';
+}
+
+function hideTip() { tip.classList.remove('show'); }
+
+render();
+</script>
+</body>
+</html>
